@@ -202,48 +202,6 @@ void edgesetPush(edgeset *set, char new_var1, char new_var2)
 }
 
 /*
- * Функция вывода множества вершин в файл
- * Через пробел выводит все элементы множества
- * Параметр `set` - указатель на множество
- * Параметр 'FILE' - указатель на файловый поток
- */
-void setOutput(set *set, FILE *fp)
-{
-    if (set->size)
-    {
-        node *curNode = set->first_node;
-        while (curNode != NULL)
-        {
-            fputc(curNode->val, fp);
-            fputs(";", fp);
-            curNode = curNode->next;
-        }
-    }
-}
-
-/*
- * Функция вывода множества ребер в файл
- * Через пробел выводит все элементы множества
- * Параметр `set` - указатель на множество
- * Параметр 'FILE' - указатель на файловый поток
- */
-void edgesetOutput(edgeset *set, FILE *fp)
-{
-    if (set->size)
-    {
-        edge *curNode = set->first_edge;
-        while (curNode != NULL)
-        {
-            fputc(curNode->first_top, fp);
-            fputs("--", fp);
-            fputc(curNode->second_top, fp);
-            fputs("; ", fp);
-            curNode = curNode->next;
-        }
-    }
-}
-
-/*
  * Функция освобождения памяти, занятой множеством вершин
  * Параметр `set` - указатель на множество
  */
@@ -310,85 +268,6 @@ int readfile(FILE *fp, set *tops, edgeset *edges)
     return 0;
 }
 
-/*
- * Функция записи файла .dot
- * Параметр `edges` - указатель на множество ребер
- * Параметр `tops` - указатель на множество вершин
- * Параметр `*fp` - указатель на файловый поток
- */
-int writefile(FILE *fp, set *tops, edgeset *edges)
-{
-    if (fp == NULL)
-        return 1;
-    fputs("graph graphname {", fp);
-    setOutput(tops, fp);
-    edgesetOutput(edges, fp);
-    fputc('}', fp);
-    fclose(fp);
-    return 0;
-}
-
-//Функция создания графа
-int createGraph(void)
-{
-    set *tops = createSet();
-    edgeset *edges = createEdgeSet();
-    int edgecount = 0;
-    int topcount = 0;
-    char *filename = dynstring('\n');
-
-    char *filepath = (char *)malloc(sizeof(filename) * strlen(filename) * 2);
-    strcat(filepath, "input/");
-    strcat(filepath, filename);
-    strcat(filepath, ".txt");
-
-    char *outfilepath = (char *)malloc(sizeof(filename) * strlen(filename) * 2);
-    strcat(outfilepath, "output/");
-    strcat(outfilepath, filename);
-    strcat(outfilepath, ".dot");
-
-    FILE *fp = fopen(filepath, "r");
-    if (readfile(fp, tops, edges) == 0)
-    {
-
-        FILE *fp2 = fopen(outfilepath, "w");
-        writefile(fp2, tops, edges);
-    }
-    else
-    {
-        perror(filepath);
-        return 1;
-    }
-    freeset(tops);
-    freeedgeset(edges);
-    free(filepath);
-    free(outfilepath);
-
-    return 0;
-}
-
-//Функция создания графа в виде png картинки
-void outputGraph(void)
-{
-    char *filename = dynstring('\n');
-    char *filepath = (char *)malloc(sizeof(filename) * strlen(filename) * 2);
-    strcat(filepath, "dot -Tpng output/");
-    strcat(filepath, filename);
-    strcat(filepath, ".dot -opngs/");
-    strcat(filepath, filename);
-    strcat(filepath, ".png");
-
-    char *filepath2 = (char *)malloc(sizeof(filename) * strlen(filename) * 2);
-    strcat(filepath2, "open pngs/");
-    strcat(filepath2, filename);
-    strcat(filepath2, ".png");
-
-    system(filepath);
-    system(filepath2);
-    free(filepath);
-    free(filepath2);
-}
-
 char* checkconnect(){
     set *tops = createSet();
     edgeset *edges = createEdgeSet();
@@ -425,7 +304,7 @@ char* checkconnect(){
 
 void help(void)
 {
-    printf("Commands for work with program:\n1 - Create graph from file.\n2 - Output graph.\n3 - Chech graph connectivity.\n0 - Exit from program.\n");
+    printf("Commands for work with program:\n1 - Chech graph connectivity.\n0 - Exit from program.\n");
 }
 
 int main(void)
@@ -445,21 +324,10 @@ int main(void)
         case 1:
             system("cd input && ls");
             puts("Input filename without extention");
-            createGraph();
-            break;
-        case 2:
-            system("cd output && ls");
-            puts("Input filename without extention");
-            outputGraph();
-            break;
-        case 3:
-            system("cd input && ls");
-            puts("Input filename without extention");
             printf("%s",checkconnect());
             putchar('\n');
             break;
         case 0:
-
             return 0;
         case -1:
             puts("Input error!!");
